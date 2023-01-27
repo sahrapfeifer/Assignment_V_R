@@ -5,8 +5,8 @@ date: '2023-01-21'
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, warning = FALSE, message=FALSE, include = F}
+options(scipen=999)
 ```
 <div class="alert alert-block alert-info">
 
@@ -18,7 +18,7 @@ personal GitHub repository.
 </div>
 
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
 rm(list = ls())
 
 setwd("C:/Users/Sahra/Desktop/M.Sc DS_WiSe1/DSPM/Assignment 5")
@@ -41,11 +41,15 @@ with a meaningful commit message, so that other people (e.g., your course instru
 understand the development history. You can do this either using Shell commands or a Git GUI of your choice.
 </div>
 
+
 <div class="alert alert-block alert-info">
 (4) In the HTML file that you submit, include the hyperlink to the project repository (e.g., https://github.
 com/yourUserName/yourProjectName)
 </div>
 
+[Link](https://github.com/sahrapfeifer/Assignment_V_R.git)
+
+***
 
 ### Getting to know the API
 
@@ -64,8 +68,9 @@ tutorial: Treat the API key as a secret token. Your API key should neither appea
 are submitting nor in your public GitHub repository.
 </div>
 
-```{r}
-# access the key from main script using:
+**Key stored in another script "API_Explorer_Key.R**
+```{r, warning = FALSE, message = FALSE}
+# access the key from main script:
 source("API_Explorer_Key.R")
 ```
 
@@ -77,7 +82,7 @@ source("API_Explorer_Key.R")
 the content from the response object and inspect the resulting list. Describe what you can see.
 </div>
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
 # load relevant packages:
 library(jsonlite)
 library(httr)
@@ -107,7 +112,7 @@ and latitude of the venues to a data frame. This data frame should have the foll
 </div>
 
 **Extract the seven columns with a Base R approach**
-```{r}
+```{r, warning = FALSE, message = FALSE}
 library(tidyverse)
 list <- lapply(response$`_embedded`$venues, unlist)
 
@@ -196,8 +201,8 @@ worker <- function(page){
 
 ***
 
-**loop function over each page**
-```{r}
+**Loop function over each page**
+```{r, warning = FALSE, message = FALSE, echo=FALSE}
 for (i in seq_along((n %/% 20) + (n %% 20 > 0))){
   list_all <- map_dfr(1:((n %/% 20) + (n %% 20 > 0)), worker)
   # unlist results, map into dataframe
@@ -206,13 +211,12 @@ for (i in seq_along((n %/% 20) + (n %% 20 > 0))){
   venues_all <- list_all[cols]
 }
 ```
-# beschreiben warum weniger Ergebnisse in df als n = totalElements:
+beschreiben warum weniger Ergebnisse in df als n = totalElements:
 
 ***
 **Adjustments of the dataframe**
-```{r}
+```{r, warning = FALSE, message = FALSE}
 # rename columns:
-library(data.table)
 setnames(venues_all, old = c("city.name", "address.line1",
                              "location.longitude", "location.latitude"),
          new = c("city","adress","longitude","latitude"))
@@ -221,8 +225,11 @@ setnames(venues_all, old = c("city.name", "address.line1",
 colsnum <- c("postalCode","longitude","latitude")
 
 venues_all[colsnum] <- sapply(venues_all[colsnum], as.numeric)
-# ---> Vgl Assignment 1!
+```
 
+***
+**Print first 10 observations**
+```{r,warning = FALSE, message = FALSE}
 # have a glimpse on the data:
 glimpse(venues_all)         
 
@@ -238,7 +245,7 @@ print(head(venues_all, 10))
 <div class="alert alert-block alert-info">
 (10) Below, you can find code that produces a map of Germany. Add points to the map indicating the locations of the event venues across Germany.
 </div>
-```{r}
+```{r, warning = FALSE, message = FALSE}
 ggplot() +
   borders("world", "Germany", colour = "black", fill = "grey90") +
   theme_void() +
@@ -262,7 +269,7 @@ been derived from the extreme points of Germany as listed on Wikipedia (see here
 of other countries, see here).
 </div>
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
 ggplot() +
   borders("world", "Germany", colour = "black", fill = "grey90") +
   theme_void() +
@@ -278,7 +285,6 @@ ggplot() +
        caption = "Source: ticketmaster.com") +
   theme(title = element_text(size=8, face='bold'),
         plot.caption = element_text(face = "italic")) 
-# don't use all_venues$latitude but just latitude
 
 ```
 
@@ -291,9 +297,8 @@ ggplot() +
 you have coded the exercises efficiently, only very few adaptions need to be made.)
 </div>
 
-**Repeat exercises 9-11 for Spain:**
+####Repeat exercises 9-11 for Spain:
 
-***
 **(9) Exercise**
 ```{r}
 # Check content response:
@@ -331,7 +336,7 @@ worker <- function(page){
 
 ***
 **Loop function over all pages**
-```{r}
+```{r, warning = FALSE, message = FALSE, echo=FALSE}
 for (i in seq_along((n %/% 20) + (n %% 20 > 0))){
   list_ES <- map_dfr(1:((n %/% 20) + (n %% 20 > 0)), worker)
   list_ES <- map_dfr(list_ES[[i]], unlist)
@@ -342,7 +347,7 @@ for (i in seq_along((n %/% 20) + (n %% 20 > 0))){
 ```
 
 **Adjustments**
-```{r}
+```{r, warning = FALSE, message = FALSE}
 # rename columns:
 setnames(venues_ES, old = c("city.name", "address.line1",
                                 "location.longitude", "location.latitude"),
@@ -364,8 +369,9 @@ print(head(venues_ES,10))
 ***
 
 **(10) Exercise**
+***
 **Plot the results**
-```{r}
+```{r, warning = FALSE, message = FALSE}
 ggplot() +
   borders("world", "Spain", colour = "black", fill = "grey90") +
   theme_void() +
@@ -382,7 +388,7 @@ ggplot() +
 ***
 
 **(11) Exercise**
-```{r}
+```{r, warning = FALSE, message = FALSE}
 ggplot() +
   borders("world", "Spain", colour = "black", fill = "grey90") +
   theme_void() +
@@ -398,8 +404,6 @@ ggplot() +
        caption = "Source: ticketmaster.com") +
   theme(title = element_text(size=8, face='bold'),
         plot.caption = element_text(face = "italic")) 
-# don't use all_venues$latitude but just latitude
-
 
 ```
 
