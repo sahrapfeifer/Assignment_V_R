@@ -172,7 +172,6 @@ this document has been last modified):
 n <- as.numeric(response[["page"]][["totalElements"]])
 n
 
-## [1] 4745
 ```
 
 **Define a function**
@@ -209,6 +208,7 @@ for (i in seq_along((n %/% 20) + (n %% 20 > 0))){
 ```
 # beschreiben warum weniger Ergebnisse in df als n = totalElements:
 
+***
 **Adjustments of the dataframe**
 ```{r}
 # rename columns:
@@ -220,7 +220,7 @@ setnames(venues_all, old = c("city.name", "address.line1",
 # convert to numeric:
 colsnum <- c("postalCode","longitude","latitude")
 
-venues_all[colsnum] <- sapply(venues_all[cols.num], as.numeric)
+venues_all[colsnum] <- sapply(venues_all[colsnum], as.numeric)
 # ---> Vgl Assignment 1!
 
 # have a glimpse on the data:
@@ -238,6 +238,21 @@ print(head(venues_all, 10))
 <div class="alert alert-block alert-info">
 (10) Below, you can find code that produces a map of Germany. Add points to the map indicating the locations of the event venues across Germany.
 </div>
+```{r}
+ggplot() +
+  borders("world", "Germany", colour = "black", fill = "grey90") +
+  theme_void() +
+  coord_quickmap() +
+  geom_point(data = venues_all,
+             aes(x=longitude, y=latitude), colour="red",
+             fill="red") +
+  labs(title = "Event locations across Germany",
+       caption = "Source: ticketmaster.com") +
+  theme(title = element_text(size=8, face='bold'),
+        plot.caption = element_text(face = "italic")) 
+
+
+```
 
 <div class="alert alert-block alert-info">
 (11) You will find that some coordinates lie way beyond the German borders and can be assumed to be faulty.
@@ -248,15 +263,22 @@ of other countries, see here).
 </div>
 
 ```{r}
-# R
 ggplot() +
   borders("world", "Germany", colour = "black", fill = "grey90") +
   theme_void() +
   coord_quickmap() +
+  geom_point(data = venues_all,
+             # in plot directly set NA for all values outside long/lat range of Germany
+             aes(x=ifelse(longitude %between% c(5.866, 15.042), 
+                          longitude, NA), 
+                 y=ifelse(latitude %between% c(47.270, 55.059), 
+                          latitude, NA)), colour="red",
+             fill="red") +
   labs(title = "Event locations across Germany",
-      caption = "Source: ticketmaster.com") +
+       caption = "Source: ticketmaster.com") +
   theme(title = element_text(size=8, face='bold'),
-        plot.caption = element_text(face = "italic"))
+        plot.caption = element_text(face = "italic")) 
+# don't use all_venues$latitude but just latitude
 
 ```
 
@@ -268,5 +290,117 @@ ggplot() +
 (12) Repeat exercises (9)–(11) for another European country of your choice. (Hint: Clean code pays off! If
 you have coded the exercises efficiently, only very few adaptions need to be made.)
 </div>
+
+**Repeat exercises 9-11 for Spain:**
+
+***
+**(9) Exercise**
+```{r}
+# Check content response:
+response_ES <- GET("https://app.ticketmaster.com/discovery/v2/venues/?",
+                  query = list(apikey = TM_expl_key,
+                               countryCode= "ES",
+                               locale = "*")) %>% content()
+
+```
+
+**number of all venues in Spain:**
+```{r}
+n_ES <- as.numeric(response_ES[["page"]][["totalElements"]])
+n_ES
+```
+
+**set countryCode in function to "ES"**:
+```{r}
+worker <- function(page){
+    # enforce a rate limit
+    Sys.sleep(.2)
+    # call the API and get the respective page
+    res_venues <- GET("https://app.ticketmaster.com/discovery/v2/venues/",
+                      query = list(apikey = TM_expl_key,
+                                   countryCode= "ES",
+                                   page = page,
+                                   # for all locations "*"
+                                   locale = "*")) 
+    
+    # return the search items
+    content(res_venues)$`_embedded`
+    
+}
+```
+
+***
+**Loop function over all pages**
+```{r}
+for (i in seq_along((n %/% 20) + (n %% 20 > 0))){
+  list_ES <- map_dfr(1:((n %/% 20) + (n %% 20 > 0)), worker)
+  list_ES <- map_dfr(list_ES[[i]], unlist)
+  venues_ES <- list_ES[cols]
+  
+}
+
+```
+
+**Adjustments**
+```{r}
+# rename columns:
+setnames(venues_ES, old = c("city.name", "address.line1",
+                                "location.longitude", "location.latitude"),
+         new = c("city","adress","longitude","latitude"))
+
+# convert to numeric:
+venues_ES[colsnum] <- sapply(venues_ES[colsnum], as.numeric)
+
+
+```
+
+***
+**Print first 10 observations of venues in Spain**:
+```{r}
+glimpse(venues_ES)         
+print(head(venues_ES,10))
+```
+
+***
+
+**(10) Exercise**
+**Plot the results**
+```{r}
+ggplot() +
+  borders("world", "Spain", colour = "black", fill = "grey90") +
+  theme_void() +
+  coord_quickmap() +
+  geom_point(data = venues_ES,
+             aes(x=longitude, y=latitude), colour="red",
+             fill="red") +
+  labs(title = "Event locations across Spain",
+       caption = "Source: ticketmaster.com") +
+  theme(title = element_text(size=8, face='bold'),
+        plot.caption = element_text(face = "italic")) 
+```
+
+***
+
+**(11) Exercise**
+```{r}
+ggplot() +
+  borders("world", "Spain", colour = "black", fill = "grey90") +
+  theme_void() +
+  coord_quickmap() +
+  geom_point(data = venues_ES,
+             # in plot directly set NA for all values outside long/lat range of Germany
+             aes(x=ifelse(longitude %between% c(-17.934,4.289), 
+                          longitude, NA), 
+                 y=ifelse(latitude %between% c(27.633, 43.738), 
+                          latitude, NA)), colour="red",
+             fill="red") +
+  labs(title = "Event locations across Spain",
+       caption = "Source: ticketmaster.com") +
+  theme(title = element_text(size=8, face='bold'),
+        plot.caption = element_text(face = "italic")) 
+# don't use all_venues$latitude but just latitude
+
+
+```
 
 
