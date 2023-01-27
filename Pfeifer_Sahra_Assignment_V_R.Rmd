@@ -18,6 +18,12 @@ personal GitHub repository.
 </div>
 
 
+```{r}
+rm(list = ls())
+
+setwd("C:/Users/Sahra/Desktop/M.Sc DS_WiSe1/DSPM/Assignment 5")
+```
+
 ### Setting up a new GitHub repository
 <div class="alert alert-block alert-info">
 (1) Register on github.com in case you have not done this already
