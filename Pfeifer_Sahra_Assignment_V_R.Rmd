@@ -64,6 +64,11 @@ tutorial: Treat the API key as a secret token. Your API key should neither appea
 are submitting nor in your public GitHub repository.
 </div>
 
+```{r}
+# access the key from main script using:
+source("API_Explorer_Key.R")
+```
+
 
 ### Interacting with the API - the basics
 
@@ -72,24 +77,48 @@ are submitting nor in your public GitHub repository.
 the content from the response object and inspect the resulting list. Describe what you can see.
 </div>
 
+```{r}
+# load relevant packages:
+library(jsonlite)
+library(httr)
+library(rlist)
+library(tidyverse)
+library(dplyr)
+
+```
+
+***
+**Perform GET request**
+```{r}
+response <- GET("https://app.ticketmaster.com/discovery/v2/venues/?",
+                query = list(apikey = TM_expl_key,
+                             countryCode= "DE",
+                             locale = "*")) %>% content()
+
+```
+<div class="alert alert-block alert-info">
+We can see....
+</div>
+
+
 <div class="alert alert-block alert-info">
 (8) Extract the name, the city, the postalCode and address, as well as the url and the longitude
 and latitude of the venues to a data frame. This data frame should have the following structure:
 </div>
 
 ```{r}
-## Rows: 20
-## Columns: 7
-## $ name <chr> "Gruenspan", "Huxleys Neue Welt", "Kleine Olympiahalle", "Z~
-## $ city <chr> "Hamburg", "Berlin", "Munich", "Emmelshausen", "Mülheim", "~
-## $ postalCode <dbl> 22767, 10967, 80809, 56281, 45479, 76646, 68766, 44263, 542~
-## $ address <chr> "Grosse Freiheit 58", "Hasenheide 107 – 113", "Spiridon-Lou~
-## $ url <chr> "http://www.ticketmaster.de/venue/287155", "http://www.tick~
-## $ longitude <dbl> 9.958075, 13.421380, 11.550920, 7.556560, 6.874710, 8.59908~
-## $ latitude <dbl> 53.55188, 52.48639, 48.17543, 50.15544, 51.42778, 49.12692,~
+# load relevant packages:
+library(jsonlite)
+library(httr)
+library(rlist)
+library(tidyverse)
+library(dplyr)
+
 ```
 
 ***
+Get first 
+```{r}
 
 ### Interacting with the API - advanced
 
