@@ -101,9 +101,8 @@ response <- GET("https://app.ticketmaster.com/discovery/v2/venues/?",
                              locale = "*")) %>% content()
 
 ```
-<div class="alert alert-block alert-info">
 We can see....
-</div>
+
 
 
 <div class="alert alert-block alert-info">
