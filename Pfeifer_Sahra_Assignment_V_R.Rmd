@@ -106,19 +106,51 @@ We can see....
 and latitude of the venues to a data frame. This data frame should have the following structure:
 </div>
 
+**Extract the seven columns with a Base R approach**
 ```{r}
-# load relevant packages:
-library(jsonlite)
-library(httr)
-library(rlist)
 library(tidyverse)
-library(dplyr)
+list <- lapply(response$`_embedded`$venues, unlist)
+
+# Ensure all list entries have values for the same keys:
+keys <- unique(unlist(lapply(list, names)))
+keys
+
+
+# Fill missing key entries with NA:
+list <- lapply(list, function(x) x[match(keys, names(x))])                                                                                                
+
+# use rbind to combine into data.frame:
+venues_op <- do.call(rbind.data.frame, list)
+colnames(venues_op) <- keys
+
+# extract desired columns
+cols <-  c("name","postalCode","url","city.name","address.line1",
+           "location.longitude","location.latitude") #in desired order, 
+
+venues_op <- venues_op[cols]
+#venues_op for "one page"
+
+# rename columns:
+library(data.table)
+setnames(venues_op, old = c("city.name", "address.line1",
+                            "location.longitude", "location.latitude"),
+         new = c("city","adress","longitude","latitude"))
+
+# convert to numeric:
+colsnum <- c("postalCode","longitude","latitude")
+
+venues_op[colsnum] <- sapply(venues_op[colsnum], as.numeric)
 
 ```
 
 ***
-Get first 
+**Have a look on the data and print first 10 observations**
 ```{r}
+glimpse(venues_op)
+print(head(venues_op,10))
+```
+
+
 
 ### Interacting with the API - advanced
 
@@ -136,15 +168,66 @@ this document has been last modified):
 </div>
 
 ```{r}
-## Rows: 12,671
-## Columns: 7
-## $ name <chr> "Gruenspan", "Huxleys Neue Welt", "Kleine Olympiahalle", "Z~
-## $ city <chr> "Hamburg", "Berlin", "Munich", "Emmelshausen", "Mülheim", "~
-## $ postalCode <dbl> 22767, 10967, 80809, 56281, 45479, 76646, 68766, 44263, 542~
-## $ address <chr> "Grosse Freiheit 58", "Hasenheide 107 – 113", "Spiridon-Lou~
-## $ url <chr> "http://www.ticketmaster.de/venue/287155", "http://www.tick~
-## $ longitude <dbl> 9.958075, 13.421380, 11.550920, 7.556560, 6.874710, 8.59908~
-## $ latitude <dbl> 53.55188, 52.48639, 48.17543, 50.15544, 51.42778, 49.12692,~
+# store number of totalElements in numeric object:
+n <- as.numeric(response[["page"]][["totalElements"]])
+n
+
+## [1] 4745
+```
+
+**Define a function**
+```{r}
+
+# define a function to request the data and return a list of results
+worker <- function(page){
+  # enforce a rate limit
+  Sys.sleep(.2)
+  # call the API and get the respective page
+  res_venues <- GET("https://app.ticketmaster.com/discovery/v2/venues/?",
+                    query = list(apikey = TM_expl_key,
+                                 countryCode= "DE",
+                                 page = page,
+                                 locale = "*")) 
+  
+  content(res_venues)$`_embedded`
+  
+}
+
+```
+
+***
+
+**loop function over each page**
+```{r}
+for (i in seq_along((n %/% 20) + (n %% 20 > 0))){
+  list_all <- map_dfr(1:((n %/% 20) + (n %% 20 > 0)), worker)
+  # unlist results, map into dataframe
+  list_all <- map_dfr(list_all[[i]], unlist)
+  # extract desired columns after each iteration
+  venues_all <- list_all[cols]
+}
+```
+# beschreiben warum weniger Ergebnisse in df als n = totalElements:
+
+**Adjustments of the dataframe**
+```{r}
+# rename columns:
+library(data.table)
+setnames(venues_all, old = c("city.name", "address.line1",
+                             "location.longitude", "location.latitude"),
+         new = c("city","adress","longitude","latitude"))
+
+# convert to numeric:
+colsnum <- c("postalCode","longitude","latitude")
+
+venues_all[colsnum] <- sapply(venues_all[cols.num], as.numeric)
+# ---> Vgl Assignment 1!
+
+# have a glimpse on the data:
+glimpse(venues_all)         
+
+# print first 10 observations:
+print(head(venues_all, 10))
 
 ```
 
