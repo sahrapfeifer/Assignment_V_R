@@ -336,8 +336,8 @@ worker <- function(page){
 ***
 **Loop function over all pages**
 ```{r, warning = FALSE, message = FALSE, echo=FALSE}
-for (i in seq_along((n %/% 20) + (n %% 20 > 0))){
-  list_ES <- map_dfr(1:((n %/% 20) + (n %% 20 > 0)), worker)
+for (i in seq_along((n_ES %/% 20) + (n_ES %% 20 > 0))){
+  list_ES <- map_dfr(1:((n_ES %/% 20) + (n_ES %% 20 > 0)), worker)
   list_ES <- map_dfr(list_ES[[i]], unlist)
   venues_ES <- list_ES[cols]
   
