@@ -47,7 +47,7 @@ understand the development history. You can do this either using Shell commands 
 com/yourUserName/yourProjectName)
 </div>
 
-[Link](https://github.com/sahrapfeifer/Assignment_V_R.git)
+[R repository](https://github.com/sahrapfeifer/Assignment_V_R.git)
 
 ***
 
@@ -58,6 +58,10 @@ com/yourUserName/yourProjectName)
 with the features and functionalities of the Ticketmaster Discovery API. Have a particular look at
 rate limits.
 </div>
+
+All API keys are issued with a default quota of 5000 API calls per day and rate limitation of 5 requests per second.
+
+***
 
 <div class="alert alert-block alert-info">
 (6) Whithin the scope of this assignment, you do not have to request your own API key. Instead retrieve
@@ -101,7 +105,7 @@ response <- GET("https://app.ticketmaster.com/discovery/v2/venues/?",
                              locale = "*")) %>% content()
 
 ```
-We can see....
+From the GET request we get a response. The response object contains three lists: _links, _embedded and pages. In pages we find the total count of all venues in Germany and the number of pages. One page contains 20 venues. _embedded is a list of lists of lists. Each list in _embedded marks one page and contains lists of data of 20 venues, except for the last page list which contains only 7. Each venues list contains data for a venue, f.e. name of the event, city, coordinates and so on.
 
 
 
@@ -109,6 +113,17 @@ We can see....
 (8) Extract the name, the city, the postalCode and address, as well as the url and the longitude
 and latitude of the venues to a data frame. This data frame should have the following structure:
 </div>
+```{r}
+## Rows: 20
+## Columns: 7
+## $ name <chr> "Gruenspan", "Huxleys Neue Welt", "Kleine Olympiahalle", "Z~
+## $ city <chr> "Hamburg", "Berlin", "Munich", "Emmelshausen", "Mülheim", "~
+## $ postalCode <dbl> 22767, 10967, 80809, 56281, 45479, 76646, 68766, 44263, 542~
+## $ address <chr> "Grosse Freiheit 58", "Hasenheide 107 – 113", "Spiridon-Lou~
+## $ url <chr> "http://www.ticketmaster.de/venue/287155", "http://www.tick~
+## $ longitude <dbl> 9.958075, 13.421380, 11.550920, 7.556560, 6.874710, 8.59908~
+## $ latitude <dbl> 53.55188, 52.48639, 48.17543, 50.15544, 51.42778, 49.12692,~
+```
 
 **Extract the seven columns with a Base R approach**
 ```{r, warning = FALSE, message = FALSE}
@@ -170,7 +185,19 @@ data frame. Print the first 10 rows and the shape of the resulting data frame. T
 should look something like this (note that the exact number of search results may have changed since
 this document has been last modified):
 </div>
+```{r}
+## Rows: 12,671
+## Columns: 7
+## $ name <chr> "Gruenspan", "Huxleys Neue Welt", "Kleine Olympiahalle", "Z~
+## $ city <chr> "Hamburg", "Berlin", "Munich", "Emmelshausen", "Mülheim", "~
+## $ postalCode <dbl> 22767, 10967, 80809, 56281, 45479, 76646, 68766, 44263, 542~
+## $ address <chr> "Grosse Freiheit 58", "Hasenheide 107 – 113", "Spiridon-Lou~
+## $ url <chr> "http://www.ticketmaster.de/venue/287155", "http://www.tick~
+## $ longitude <dbl> 9.958075, 13.421380, 11.550920, 7.556560, 6.874710, 8.59908~
+## $ latitude <dbl> 53.55188, 52.48639, 48.17543, 50.15544, 51.42778, 49.12692,~
+```
 
+***
 ```{r}
 # store number of totalElements in numeric object:
 n <- as.numeric(response[["page"]][["totalElements"]])
@@ -210,7 +237,6 @@ for (i in seq_along((n %/% 20) + (n %% 20 > 0))){
   venues_all <- list_all[cols]
 }
 ```
-beschreiben warum weniger Ergebnisse in df als n = totalElements:
 
 ***
 **Adjustments of the dataframe**
@@ -236,6 +262,7 @@ glimpse(venues_all)
 print(head(venues_all, 10))
 
 ```
+Some of the values got lost for a reason...
 
 ***
 
